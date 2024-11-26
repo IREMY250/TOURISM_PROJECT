@@ -1,6 +1,6 @@
-from .serializers import user_serializers,Profile_serializers,user_profile_serializers,Activity_serializers,Booking_serializers,Book_activity_serializers
+from .serializers import user_serializers,Profile_serializers,user_profile_serializers,Activity_serializers,Booking_serializers,Book_activity_serializers,Review_serializers
 from django.contrib.auth.models import User
-from .models import User_Profile,Activity,Booking,Book_activity
+from .models import User_Profile,Activity,Booking,Book_activity,Review
 from rest_framework.decorators import api_view
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
@@ -11,7 +11,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view,authentication_classes,permission_classes
 from rest_framework.authentication import SessionAuthentication,TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-
+import random
+from django.db.models import Avg
 
 @api_view(['POST'])
 def signup(request):
@@ -243,9 +244,8 @@ def Booking(request):
         serializer_booked_activity=Book_activity_serializers(data=booked_activity)
         if serializer_booked_activity.is_valid():
             serializer_booked_activity.save()
-            if not get_activity.available_slots == 'null':
-                get_activity.available_slots=get_activity.available_slots - slots
-                get_activity.save()
+            get_activity.available_slots=get_activity.available_slots - slots
+            get_activity.save()
         else:
          return JsonResponse(serializer_booked_activity.errors, status=status.HTTP_400_BAD_REQUEST)
     return JsonResponse (serializer_credentials_booked.data,status=status.HTTP_200_OK)
@@ -253,12 +253,32 @@ def Booking(request):
 
 
 
+def generate_random(maximum_digits=10):
+    num=random.randint(1,maximum_digits)
+    gen_random=random.randint(10**(num-1),10**num-1)
+    return f"user{gen_random}"
 
 
 
 
 
 
+@api_view(['POST'])
+def review(request):
+    take=request.data
+    rev_response={
+        'rate':take.get('rate'),
+        'message':take.get('message'),
+        'reviewer':generate_random()
+    }
+
+    serializer=Review_serializers(data=rev_response)
+    if serializer.is_valid():
+        serializer.save()
+    average_stars=Review.objects.aggregate(average=Avg('rate'))['average']
+    reviews = Review.objects.all()
+    serializer_review = Review_serializers(reviews,many=True)
+    return JsonResponse({"average":average_stars,'reviews':serializer_review.data},status=status.HTTP_200_OK,safe=False)
 
 
 

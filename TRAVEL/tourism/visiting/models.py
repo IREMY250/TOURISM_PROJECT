@@ -38,5 +38,12 @@ class Book_activity(models.Model):
     activity=models.ForeignKey(Activity,on_delete=models.CASCADE,related_name='activities')
     booked_slots = models.IntegerField(null=True, blank=True)
 
+
+class Review(models.Model):
+    reviewer=models.CharField(max_length=255)
+    rate=models.IntegerField()
+    message=models.TextField()
+    
+
  
    

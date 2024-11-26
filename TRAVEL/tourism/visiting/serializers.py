@@ -1,6 +1,6 @@
 
 from rest_framework import serializers
-from .models import User_Profile,Activity,Booking,Book_activity
+from .models import User_Profile,Activity,Booking,Book_activity,Review
 from django.contrib.auth.models import User
 
 
@@ -42,3 +42,10 @@ class Book_activity_serializers(serializers.ModelSerializer):
     class Meta:
        model = Book_activity
        fields= [ 'id','booking','activity','booked_slots']
+
+
+
+class Review_serializers(serializers.ModelSerializer):
+    class Meta:
+       model = Review
+       fields= [ 'id','reviewer','rate','message']
